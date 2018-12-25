@@ -1,0 +1,53 @@
+media_player:
+  - id: mopidy
+    alias: 'Mopidy'
+    platform: mpd
+    name: 'Mopidy'
+    host: 192.168.178.27
+    
+script:
+  stream_mopidy_to_cc:
+    alias: Start streaming
+    sequence:
+      - delay: '00:00:05'
+      - service: media_player.play_media
+        data:
+          media_content_id: 'http://192.168.178.27:8000/mopidy.mp3'
+          media_content_type: 'audio/mp4'
+        data_template:
+          entity_id: '{{ entity_id }}'
+          
+automation:
+  # Wenn man den Google Home im Schlafzimmer ausschaltet, soll der mopidy Server gestoppt werden
+  - id: switch-off-mopidy
+    alias: Modipy ausschalten
+    trigger:
+    - entity_id: media_player.home_schlafzimmer
+      platform: state
+      from: 'playing'
+      to: 'paused'   
+    - entity_id: media_player.home_schlafzimmer
+      platform: state
+      from: 'playing'
+      to: 'off'
+    - entity_id: media_player.home_schlafzimmer
+      platform: state
+      from: 'playing'
+      to: 'idle'
+    condition:
+    - condition: state
+      entity_id: media_player.mopidy
+      state: 'playing'
+    action:
+    - service: media_player.turn_off
+      entity_id: media_player.mopidy
+#   - alias: Cast music when playing from MPD
+#     trigger:
+#       platform: state
+#       entity_id: media_player.music_pi
+#       to: 'playing'
+#     action:
+#       - service: script.turn_on
+#         entity_id: script.stream_mopidy_to_cc
+#         data:
+#           entity_id: media_player.home_schlafzimmer

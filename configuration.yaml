@@ -1,0 +1,137 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 49.035268
+  longitude: 11.586645
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 364
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Berlin
+  # Customization file
+  customize: !include customize.yaml
+
+  packages: !include_dir_named packages
+
+hassio:
+
+# Show links to resources in log and frontend
+#introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+# Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+http:
+  base_url: https://home.bahuma.io:8123
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  include_used_components: true
+
+# Discover some devices automatically
+#discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+notify:
+  - platform: html5
+    gcm_api_key: !secret gcm_api_key
+    gcm_sender_id: !secret gcm_sender_id
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Store history in mysql database
+recorder:
+  db_url: !secret recorder_db_url
+  purge_keep_days: 99999
+  purge_interval: 0
+
+# Enables a map showing the location of tracked devices
+#map:
+
+hue:
+  bridges:
+    - host: 192.168.178.33
+      allow_hue_groups: false
+
+# Track the sun
+sun:
+
+sensor:
+  - platform: fritzbox_netmonitor
+
+# Text to speech
+tts:
+  - platform: google
+
+# Cloud
+cloud:
+  google_actions:
+    filter:
+      exclude_domains:
+        - media_player
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+panel_iframe:
+  configurator:
+    title: Configurator
+    icon: mdi:wrench
+    url: https://home.bahuma.io:3218
+
+
+mqtt:
+  password: !secret mqtt_password
+
+light:
+  - platform: mqtt
+    name: "Wohnwand"
+    schema: json
+    state_topic: "home/wohnwand"
+    command_topic: "home/wohnwand/set"
+    brightness: true
+    rgb: true
+    optimistic: false
+    qos: 0
+
+# media_player:
+#   - platform: samsungtv
+#     host: 192.168.178.34
+#     port: 8001
+#     mac: !secret samsungtv_mac
+
+cast:
+  media_player:
+  - host: 192.168.178.28 # Chromecast
+  - host: 192.168.178.22 # Google Home
+  - host: 192.168.178.23 # Google Home Mini
+  - host: 192.168.178.30 # Chromecast Audio
+
+device_tracker:
+  - platform: fritz
+    new_device_defaults:
+      track_new_devices: False
+      hide_if_away: False
+

@@ -1,0 +1,28 @@
+- name: Arbeitsmodus
+  entities:
+    light.deckenlampe:
+      state: true
+      color_temp: 153
+      brightness: 255
+      transition: 3
+      
+- name: Hell
+  entities:
+    light.deckenlampe:
+      state: true
+      color_temp: 330
+      brightness: 255
+      transition: 3
+
+- name: Fernsehmodus
+  entities:
+    light.wohnwand: 
+      state: true
+      rgb_color: [255,0,0]
+      brightness: 70
+      transition: 3
+    light.deckenlampe:
+      state: true
+      rgb_color: [64,0,255]
+      brightness: 45
+      transition: 3

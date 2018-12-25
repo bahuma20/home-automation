@@ -1,0 +1,49 @@
+vacuum:
+  - platform: xiaomi_miio
+    host: 192.168.178.35
+    token: !secret xiaomi_vacuum_token
+
+input_datetime:
+  vacuum_last_run:
+    name: Vacuum Last Run
+    has_date: true
+    has_time: false
+
+automation:
+  - id: save-vacuum-last-run
+    alias: Speichere Zeitpunkt wann der Staubsauger zuletzt gelaufen ist
+    trigger:
+    - platform: state
+      entity_id: vacuum.xiaomi_vacuum_cleaner
+      to: 'cleaning'
+    action: 
+    - service: input_datetime.set_datetime
+      entity_id: input_datetime.vacuum_last_run
+      data_template:
+        date: "{{as_timestamp(now())|timestamp_custom('%Y-%m-%d')}}"
+
+  - id: start-vacuum-when-leaving
+    alias: Staubsauger starten wenn ich das Haus verlasse
+    trigger:
+    - entity_id: device_tracker.pixel2xl
+      platform: state
+      from: home
+      to: not_home
+    condition:
+      condition: template
+      value_template: "{{ as_timestamp(now())|timestamp_custom('%Y-%m-%d') != state_attr('input_datetime.vacuum_last_run', 'timestamp')|int|timestamp_custom('%Y-%m-%d') }}" # If not already run today<
+    action:
+      - service: vacuum.start
+        entity_id: vacuum.xiaomi_vacuum_cleaner
+
+  - id: start-vacuum
+    alias: 'Staubsauger um 18 Uhr starten falls heute noch nicht gelaufen'
+    trigger:
+      platform: time
+      at: '18:00:00'
+    condition:
+      condition: template
+      value_template: "{{ as_timestamp(now())|timestamp_custom('%Y-%m-%d') != state_attr('input_datetime.vacuum_last_run', 'timestamp')|int|timestamp_custom('%Y-%m-%d') }}" # If not already run today<
+    action:
+      - service: vacuum.start
+        entity_id: vacuum.xiaomi_vacuum_cleaner
